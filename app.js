@@ -1,6 +1,7 @@
 // variables
 const productsContainer = document.querySelector('#products');
 const dropdownCategories = document.querySelector('#dropdown-categories');
+const formSearch = document.querySelector('#form-search');
 
 // backend url
 const baseURL = 'http://localhost:3000';
@@ -8,6 +9,9 @@ const baseURL = 'http://localhost:3000';
 // get all products
 const getProducts = async () => {
   try {
+    // clear previous products
+    productsContainer.innerHTML = '';
+
     const response = await fetch(`${baseURL}/products`);
     const data = await response.json();
 
@@ -83,3 +87,34 @@ const showCategories = (categories) => {
     dropdownCategories.append(nav);
   });
 };
+
+// get products by text search
+const getProductsByTextSearch = async (url) => {
+  try {
+    // clear previous products
+    productsContainer.innerHTML = '';
+
+    const response = await fetch(url);
+    const data = await response.json();
+
+    showProducts(data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+
+// search products by text
+formSearch.addEventListener('submit', (e) => {
+  e.preventDefault();
+
+  // input search
+  const queryInput = document.querySelector('#query');
+
+  let { query } = e.target.elements;
+  query = query.value;
+
+  getProductsByTextSearch(`${baseURL}/products?query_text=${query}`);
+
+  // clear input search
+  queryInput.value = '';
+});
