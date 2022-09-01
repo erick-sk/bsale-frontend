@@ -1,5 +1,6 @@
 // variables
 const productsContainer = document.querySelector('#products');
+const dropdownCategories = document.querySelector('#dropdown-categories');
 
 // backend url
 const baseURL = 'http://localhost:3000';
@@ -52,4 +53,33 @@ const showProducts = (products) => {
     message.innerHTML = '<h1>No products</h1>';
     productsContainer.append(message);
   }
+};
+
+// get all categories
+const getCategories = async () => {
+  try {
+    const response = await fetch(`${baseURL}/categories`);
+    const data = await response.json();
+
+    showCategories(data);
+  } catch (error) {
+    console.log(error);
+  }
+};
+getCategories();
+
+// show all categories
+const showCategories = (categories) => {
+  categories.map((category) => {
+    const { name } = category;
+    const categoryName = name[0].toUpperCase() + category.name.slice(1);
+
+    // show categories in dropdown-list
+    const nav = document.createElement('nav');
+    nav.innerHTML = `
+      <a class="dropdown-item" href="#">${categoryName}</a>    
+    `;
+
+    dropdownCategories.append(nav);
+  });
 };
