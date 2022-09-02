@@ -89,7 +89,7 @@
     <main class="container-xl mb-4">
       <h1>Products</h1>
 
-      <div id="products" class="row"></div>
+      <div id="products" class="row list-products"></div>
     </main>
     <!-- END MAIN -->
 
@@ -106,7 +106,7 @@
       <div class="modal-dialog">
         <div class="modal-content">
           <div class="modal-header">
-            <h5 class="modal-title" id="staticBackdropLabel">Modal title</h5>
+            <h5 class="modal-title" id="staticBackdropLabel">My list</h5>
             <button
               type="button"
               class="btn-close"
@@ -114,7 +114,20 @@
               aria-label="Close"
             ></button>
           </div>
-          <div class="modal-body">...</div>
+          <div id="cart" class="modal-body">
+            <table id="list-cart" class="table table-striped align-middle">
+              <thead class="align-middle">
+                <tr>
+                  <th class="text-center" scope="col">Image</th>
+                  <th class="text-center" scope="col">Name</th>
+                  <th class="text-center" scope="col">Price</th>
+                  <th class="text-center" scope="col">Amount</th>
+                  <th></th>
+                </tr>
+              </thead>
+              <tbody></tbody>
+            </table>
+          </div>
           <div class="modal-footer">
             <button
               type="button"
@@ -123,7 +136,7 @@
             >
               Close
             </button>
-            <button type="button" class="btn btn-primary">Understood</button>
+            <a href="#" id="empty-cart" class="btn btn-danger">Empty Cart</a>
           </div>
         </div>
       </div>
