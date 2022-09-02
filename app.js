@@ -72,24 +72,30 @@ const getCategories = async () => {
 };
 getCategories();
 
-// show all categories
+// show all categories and call to API
 const showCategories = (categories) => {
   categories.map((category) => {
-    const { name } = category;
+    const { name, id } = category;
+    // capitalize categories
     const categoryName = name[0].toUpperCase() + category.name.slice(1);
+    // create li for links
+    const li = document.createElement('li');
 
-    // show categories in dropdown-list
-    const nav = document.createElement('nav');
-    nav.innerHTML = `
-      <a class="dropdown-item" href="#">${categoryName}</a>    
+    // add event to each link to call api
+    li.addEventListener('click', () => {
+      getProductsByFilter(`${baseURL}/products?category_id=${id}`);
+    });
+
+    li.innerHTML = `
+      <a class="dropdown-item" href="#">${categoryName}</a>
     `;
 
-    dropdownCategories.append(nav);
+    dropdownCategories.append(li);
   });
 };
 
-// get products by text search
-const getProductsByTextSearch = async (url) => {
+// get products by filter
+const getProductsByFilter = async (url) => {
   try {
     // clear previous products
     productsContainer.innerHTML = '';
@@ -113,7 +119,7 @@ formSearch.addEventListener('submit', (e) => {
   let { query } = e.target.elements;
   query = query.value;
 
-  getProductsByTextSearch(`${baseURL}/products?query_text=${query}`);
+  getProductsByFilter(`${baseURL}/products?query_text=${query}`);
 
   // clear input search
   queryInput.value = '';
