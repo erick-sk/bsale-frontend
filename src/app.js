@@ -77,7 +77,7 @@ const showProducts = (products) => {
       grid.innerHTML = `
         <div class="card">          
           <img src="${
-            url_image || 'default-image.jpg'
+            url_image || 'src/images/default-image.png'
           }" class="card-img-top" alt="${name}" style=" height: 20rem;">
           <div class="card-body">
             <h6 class="card-title text-capitalize">${name}</h6>
