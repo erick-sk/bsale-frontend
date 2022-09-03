@@ -114,7 +114,14 @@ const showProducts = (products) => {
     );
   } else {
     const message = document.createElement('h1');
-    message.innerHTML = '<h1>No products</h1>';
+    message.innerHTML = `
+      <div class="mt-4 d-flex flex-column justify-content-center align-items-center">
+        <div>
+          <img src="src/images/products-not-found.png" alt="products not found" />
+        </div>
+        <p class="text-center">Products not found, try again!</p>
+      </div
+    `;
     productsContainer.append(message);
   }
 };
