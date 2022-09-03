@@ -1,37 +1,79 @@
 import { BACKEND_URL } from './constants.js';
+import { store as productStore } from './stores/products.js';
+import { store as cartStore } from './stores/cart.js';
 
-// variables
-const productsContainer = document.querySelector('#products');
-// cart products
-let cartProducts = [];
+productStore.on('LOAD_PRODUCTS', (event) => showProducts(event.detail));
 
-// backend url
-const baseURL = 'http://localhost:3000';
+productStore.on('LOAD_CATEGORIES', (event) => showCategories(event.detail));
 
 // get all products
-const getProducts = async () => {
-  try {
-    // clear previous products
-    productsContainer.innerHTML = '';
+productStore.getProducts();
 
-    const response = await fetch(`${baseURL}/products`);
-    const data = await response.json();
+// get all categories
+productStore.getCategories();
 
-    showProducts(data);
-  } catch (error) {
-    console.log(error);
-  }
-};
-getProducts();
+// show cart products in modal
+cartStore.on('CART_UPDATED', ({ detail: cartProducts }) => {
+  const cartContainer = document.querySelector('#list-cart tbody');
+
+  // clear previous HTML
+  cartContainer.innerHTML = '';
+
+  // scrolls through the cart and generates the HTML
+  cartProducts.map((product) => {
+    const { url_image, name, price, amount, id } = product;
+
+    const row = document.createElement('tr');
+    row.innerHTML = `
+     <td class="text-center">
+       <img src="${url_image}" width="100px"></img>
+     </td>
+     <td class="text-center">
+       ${name}
+     </td>
+     <td class="text-center">
+       $${price}.00
+     </td>
+     <td class="text-center">
+       ${amount}
+     </td>
+     <td class="text-center" >
+       <a href="#" class="btn badge rounded-pill text-bg-danger delete-product" data-id="${id}"> X </a>
+     </td>
+   `;
+
+    // add HTML in the tbody
+    cartContainer.appendChild(row);
+  });
+
+  const removeProduct = (e) => {
+    const selectedProductId = Number(e.target.dataset.id);
+    cartStore.removeProduct(selectedProductId);
+  };
+
+  // when delete product from button "Empty Cart"
+  const removeFromCartBtn = document.querySelectorAll('.delete-product');
+
+  removeFromCartBtn.forEach((button) =>
+    button.addEventListener('click', removeProduct)
+  );
+});
+
+cartStore.initialize();
 
 // show all products
 const showProducts = (products) => {
+  const productsContainer = document.querySelector('#products');
+
+  // clear previous products
+  productsContainer.innerHTML = '';
+
   if (products.length > 0) {
     products.map((product) => {
       const { name, url_image, price, id } = product;
 
       const grid = document.createElement('div');
-      grid.classList.add('col-12', 'col-md-6', 'col-lg-4', 'g-4');
+      grid.classList.add('col-12', 'col-md-6', 'col-lg-4', 'col-xxl-3', 'g-4');
       grid.innerHTML = `
         <div class="card">          
           <img src="${
@@ -55,44 +97,32 @@ const showProducts = (products) => {
 
       productsContainer.append(grid);
     });
+
+    // add product
+    const addProduct = (e) => {
+      const selectedProductId = Number(e.target.dataset.id);
+      const product = productStore.getProduct(selectedProductId);
+
+      cartStore.addProduct({ product, amount: 1 });
+    };
+
+    // when add a product
+    const addCartBtns = document.querySelectorAll('.add-cart');
+
+    addCartBtns.forEach((button) =>
+      button.addEventListener('click', addProduct)
+    );
   } else {
     const message = document.createElement('h1');
     message.innerHTML = '<h1>No products</h1>';
     productsContainer.append(message);
   }
-
-  // add product
-  const addProduct = (e) => {
-    e.preventDefault();
-
-    if (e.target.classList.contains('add-cart')) {
-      const selectedProduct =
-        e.target.parentElement.parentElement.parentElement;
-      readProductData(selectedProduct);
-    }
-  };
-
-  // when add a product
-  const listProducts = document.querySelector('.list-products');
-
-  listProducts.addEventListener('click', addProduct);
 };
 
-// get all categories
-const getCategories = async () => {
-  try {
-    const response = await fetch(`${baseURL}/categories`);
-    const data = await response.json();
-
-    showCategories(data);
-  } catch (error) {
-    console.log(error);
-  }
-};
-getCategories();
-
-// show all categories and call to API
+// show all categories
 const showCategories = (categories) => {
+  const dropdownCategories = document.querySelector('#dropdown-categories');
+
   categories.map((category) => {
     const { name, id } = category;
     // capitalize categories
@@ -102,35 +132,22 @@ const showCategories = (categories) => {
 
     // add event to each link to call api
     li.addEventListener('click', () => {
-      getProductsByFilter(`${baseURL}/products?category_id=${id}`);
+      productStore.getProductsByFilter(
+        `${BACKEND_URL}/products?category_id=${id}`
+      );
     });
 
     li.innerHTML = `
       <a class="dropdown-item" href="#">${categoryName}</a>
     `;
 
-    const dropdownCategories = document.querySelector('#dropdown-categories');
     dropdownCategories.append(li);
   });
 };
 
-// get products by filter
-const getProductsByFilter = async (url) => {
-  try {
-    // clear previous products
-    productsContainer.innerHTML = '';
-
-    const response = await fetch(url);
-    const data = await response.json();
-
-    showProducts(data);
-  } catch (error) {
-    console.log(error);
-  }
-};
-
 // search products by text
 const formSearch = document.querySelector('#form-search');
+
 formSearch.addEventListener('submit', (e) => {
   e.preventDefault();
 
@@ -140,7 +157,9 @@ formSearch.addEventListener('submit', (e) => {
   let { query } = e.target.elements;
   query = query.value;
 
-  getProductsByFilter(`${baseURL}/products?query_text=${query}`);
+  productStore.getProductsByFilter(
+    `${BACKEND_URL}/products?query_text=${query}`
+  );
 
   // clear input search
   queryInput.value = '';
@@ -148,115 +167,12 @@ formSearch.addEventListener('submit', (e) => {
 
 // CART
 // load events por cart
-const loadEventListeners = () => {
-  // add products from LocalStorage
-  document.addEventListener('DOMContentLoaded', () => {
-    cartProducts = JSON.parse(localStorage.getItem('cart')) ?? [];
-
-    displayCartProducts();
-  });
-
+const setupCartEventListeners = () => {
   // empty cart
   const emptyCartBtn = document.querySelector('#empty-cart');
 
   emptyCartBtn.addEventListener('click', () => {
-    cartProducts = []; // reset cart
-
-    cartContainer.innerHTML = '';
+    cartStore.emptyCart();
   });
 };
-
-loadEventListeners();
-
-// read data product
-const readProductData = (product) => {
-  // object product info
-  const productData = {
-    image: product.querySelector('img').src,
-    title: product.querySelector('h6').textContent,
-    price: product.querySelector('.price').textContent,
-    id: product.querySelector('button').getAttribute('data-id'),
-    amount: 1,
-  };
-
-  // check if a product already exists
-  const exists = cartProducts.some((product) => product.id === productData.id);
-  if (exists) {
-    // update amount
-    const products = cartProducts.map((product) => {
-      if (product.id === productData.id) {
-        product.amount++;
-        return product; // return updated object
-      } else {
-        return product; // return no duplicates
-      }
-    });
-
-    cartProducts = [...products];
-  } else {
-    // add products to cart
-    cartProducts = [...cartProducts, productData];
-  }
-
-  displayCartProducts();
-};
-
-// show cart products in modal
-const displayCartProducts = () => {
-  const cartContainer = document.querySelector('#list-cart tbody');
-  // clear previous HTML
-  cartContainer.innerHTML = '';
-
-  // scrolls through the cart and generates the HTML
-  cartProducts.map((product) => {
-    const { image, title, price, amount, id } = product;
-    const row = document.createElement('tr');
-    row.innerHTML = `
-      <td class="text-center">
-        <img src="${image}" width="100px"></img>
-      </td>
-      <td class="text-center">
-        ${title}
-      </td>
-      <td class="text-center">
-      ${price}
-      </td>
-      <td class="text-center">
-        ${amount}
-      </td>
-      <td class="text-center" >
-        <a href="#" class="btn badge rounded-pill text-bg-danger delete-product" data-id="${id}"> X </a>
-      </td>
-    `;
-
-    // add HTML in the tbody
-    cartContainer.appendChild(row);
-  });
-
-  // delete product
-  const deleteProduct = (e) => {
-    e.preventDefault();
-
-    if (e.target.classList.contains('delete-product')) {
-      const productID = e.target.getAttribute('data-id');
-
-      // delete product by data-id
-      cartProducts = cartProducts.filter((product) => product.id !== productID);
-
-      displayCartProducts();
-    }
-  };
-
-  // when delete product from cart
-  const cart = document.querySelector('#cart');
-
-  cart.addEventListener('click', deleteProduct);
-
-  // add cart products to LocalStorage
-  syncLocalStorage();
-};
-
-// sync cart products with LocalStorage
-const syncLocalStorage = () => {
-  localStorage.setItem('cart', JSON.stringify(cartProducts));
-};
+setupCartEventListeners();
