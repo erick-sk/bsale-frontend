@@ -58,6 +58,22 @@ const showProducts = (products) => {
     message.innerHTML = '<h1>No products</h1>';
     productsContainer.append(message);
   }
+
+  // add product
+  const addProduct = (e) => {
+    e.preventDefault();
+
+    if (e.target.classList.contains('add-cart')) {
+      const selectedProduct =
+        e.target.parentElement.parentElement.parentElement;
+      readProductData(selectedProduct);
+    }
+  };
+
+  // when add a product
+  const listProducts = document.querySelector('.list-products');
+
+  listProducts.addEventListener('click', addProduct);
 };
 
 // get all categories
@@ -131,16 +147,6 @@ formSearch.addEventListener('submit', (e) => {
 // CART
 // load events por cart
 const loadEventListeners = () => {
-  // when add a product
-  const listProducts = document.querySelector('.list-products');
-
-  listProducts.addEventListener('click', addProduct);
-
-  // when delete product from cart
-  const cart = document.querySelector('#cart');
-
-  cart.addEventListener('click', deleteProduct);
-
   // add products from LocalStorage
   document.addEventListener('DOMContentLoaded', () => {
     cartProducts = JSON.parse(localStorage.getItem('cart')) ?? [];
@@ -158,29 +164,6 @@ const loadEventListeners = () => {
   });
 };
 
-// add product
-const addProduct = (e) => {
-  e.preventDefault();
-
-  if (e.target.classList.contains('add-cart')) {
-    const selectedProduct = e.target.parentElement.parentElement.parentElement;
-    readProductData(selectedProduct);
-  }
-};
-
-// delete product
-const deleteProduct = (e) => {
-  e.preventDefault();
-
-  if (e.target.classList.contains('delete-product')) {
-    const productID = e.target.getAttribute('data-id');
-
-    // delete product by data-id
-    cartProducts = cartProducts.filter((product) => product.id !== productID);
-
-    displayCartProducts();
-  }
-};
 loadEventListeners();
 
 // read data product
@@ -247,6 +230,25 @@ const displayCartProducts = () => {
     // add HTML in the tbody
     cartContainer.appendChild(row);
   });
+
+  // delete product
+  const deleteProduct = (e) => {
+    e.preventDefault();
+
+    if (e.target.classList.contains('delete-product')) {
+      const productID = e.target.getAttribute('data-id');
+
+      // delete product by data-id
+      cartProducts = cartProducts.filter((product) => product.id !== productID);
+
+      displayCartProducts();
+    }
+  };
+
+  // when delete product from cart
+  const cart = document.querySelector('#cart');
+
+  cart.addEventListener('click', deleteProduct);
 
   // add cart products to LocalStorage
   syncLocalStorage();
