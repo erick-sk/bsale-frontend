@@ -1,3 +1,5 @@
+import { BACKEND_URL } from './constants.js';
+
 // variables
 const productsContainer = document.querySelector('#products');
 // cart products
