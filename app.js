@@ -142,6 +142,13 @@ const loadEventListeners = () => {
   // when delete product from cart
   cart.addEventListener('click', deleteProduct);
 
+  // add products from LocalStorage
+  document.addEventListener('DOMContentLoaded', () => {
+    cartProducts = JSON.parse(localStorage.getItem('cart')) ?? [];
+
+    displayCartProducts();
+  });
+
   // empty cart
   emptyCartBtn.addEventListener('click', () => {
     cartProducts = []; // reset cart
@@ -238,4 +245,12 @@ const displayCartProducts = () => {
     // add HTML in the tbody
     cartContainer.appendChild(row);
   });
+
+  // add cart products to LocalStorage
+  syncLocalStorage();
+};
+
+// sync cart products with LocalStorage
+const syncLocalStorage = () => {
+  localStorage.setItem('cart', JSON.stringify(cartProducts));
 };
