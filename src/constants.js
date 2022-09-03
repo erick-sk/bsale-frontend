@@ -1,2 +1,2 @@
 // backend url
-export const BACKEND_URL = 'http://localhost:3000';
+export const BACKEND_URL = 'https://bsale-backend-rails.herokuapp.com';
