@@ -1,13 +1,6 @@
 // variables
 const productsContainer = document.querySelector('#products');
-const dropdownCategories = document.querySelector('#dropdown-categories');
-const formSearch = document.querySelector('#form-search');
-
-// variables cart
-const cart = document.querySelector('#cart');
-const cartContainer = document.querySelector('#list-cart tbody');
-const emptyCartBtn = document.querySelector('#empty-cart');
-const listProducts = document.querySelector('.list-products');
+// cart products
 let cartProducts = [];
 
 // backend url
@@ -98,6 +91,7 @@ const showCategories = (categories) => {
       <a class="dropdown-item" href="#">${categoryName}</a>
     `;
 
+    const dropdownCategories = document.querySelector('#dropdown-categories');
     dropdownCategories.append(li);
   });
 };
@@ -118,6 +112,7 @@ const getProductsByFilter = async (url) => {
 };
 
 // search products by text
+const formSearch = document.querySelector('#form-search');
 formSearch.addEventListener('submit', (e) => {
   e.preventDefault();
 
@@ -137,9 +132,13 @@ formSearch.addEventListener('submit', (e) => {
 // load events por cart
 const loadEventListeners = () => {
   // when add a product
+  const listProducts = document.querySelector('.list-products');
+
   listProducts.addEventListener('click', addProduct);
 
   // when delete product from cart
+  const cart = document.querySelector('#cart');
+
   cart.addEventListener('click', deleteProduct);
 
   // add products from LocalStorage
@@ -150,6 +149,8 @@ const loadEventListeners = () => {
   });
 
   // empty cart
+  const emptyCartBtn = document.querySelector('#empty-cart');
+
   emptyCartBtn.addEventListener('click', () => {
     cartProducts = []; // reset cart
 
@@ -217,6 +218,7 @@ const readProductData = (product) => {
 
 // show cart products in modal
 const displayCartProducts = () => {
+  const cartContainer = document.querySelector('#list-cart tbody');
   // clear previous HTML
   cartContainer.innerHTML = '';
 
@@ -232,7 +234,7 @@ const displayCartProducts = () => {
         ${title}
       </td>
       <td class="text-center">
-        ${price}
+      ${price}
       </td>
       <td class="text-center">
         ${amount}
